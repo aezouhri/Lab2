@@ -9,6 +9,16 @@
 ; Author : aezouhri
 
 ;
+
+; put code here to configure I/0 lines ; as output & connected to SN74HC595
+
+sbi  DDRB,1
+sbi  DDRB,2
+sbi  DDRB,3
+cbi  DDRB,4
+cbi  DDRB,5
+ldi R16,0x67
+
 push R16
 ldi R16, 0x7F
 push R16
@@ -29,77 +39,74 @@ push R16
 ldi r16,0xBF
 push R16
 
-; put code here to configure I/0 lines ; as output & connected to SN74HC595
-
-sbi  DDRB,1
-sbi  DDRB,2
-sbi  DDRB,3
-cbi  DDRB,4
-cbi  DDRB,5
 ; start main program
 
 ;rcall miliSecDelay
 
 ; display a digit 
-L1: SBIS PINB,4
+/*L1: 
+	SBIS PINB,4
 	rjmp L2
 	ldi R16,0x06;0
+	ldi R20,0xBF
+	;pop R20
 	rcall display
-	rcall oneSecDelay
+	;rcall oneSecDelay
 	;ldi R18,0x07 ;0
 	;rcall display2
-	rcall effeciency
+	;rcall effeciency
 	
 
 	rjmp L1
-
+	*/
 L2: 
-
+pop R20
 ldi R16, 0x06 ; load pattern to display
+
 rcall display ; call display subroutine
-rcall oneSecDelay
+rcall miliSecDelay
 rcall effeciency
 
 ldi R16, 0x5B ; load pattern to display
 rcall display
-rcall oneSecDelay
+rcall miliSecDelay
 rcall effeciency
 
 ldi R16, 0x4F ; load pattern to display
 rcall display
-rcall oneSecDelay
+rcall miliSecDelay
 rcall effeciency
 
 ldi R16, 0x66 ; load pattern to display
 rcall display
-rcall oneSecDelay
+rcall miliSecDelay
 rcall effeciency
 
 ldi R16, 0x6D; load pattern to display
 rcall display
-rcall oneSecDelay
+rcall miliSecDelay
 rcall effeciency
 
 ldi R16, 0x7D ; load pattern to display
 rcall display
 rcall effeciency
-rcall oneSecDelay
+rcall miliSecDelay
 
 ldi R16, 0x07 ; load pattern to display
 rcall display
-rcall oneSecDelay
+rcall miliSecDelay
 rcall effeciency
 
 ldi R16, 0x7F ; load pattern to display
 rcall display
-rcall oneSecDelay
+rcall miliSecDelay
 
 ;SBIS PINB,4    will try to move in some loop 
 ;rjmp L2
 
 ldi R16, 0x67 ; load pattern to display
 rcall display
-rcall oneSecDelay
+rcall miliSecDelay
 RJMP L2
 
 
@@ -114,7 +121,7 @@ display:
 ; backup used registers on stack
 
 	   
-
+	  ;  ldi R17, 8 ; loop --> test all 8 bits
        push R16
        push R17
        in R17, SREG
@@ -132,7 +139,8 @@ loop:
        cbi PORTB,3
        rjmp end
 
-
+	   
+	   
 set_ser_in_1:
 ; put code here to set SER to 1...
        sbi PORTB,3
@@ -142,17 +150,19 @@ set_ser_in_1:
 end: 
 ; put code here to generate SRCLK pulse...
        sbi PORTB,2
-       rcall delay_long
+      ; rcall delay_long
        cbi PORTB,2
        dec R17
        brne loop
+	   ;ldi R16,0xBF
+	  ; push R16
 	   ldi R19, 8
-	   ldi r16,0xBF
+	   mov R18,R20
 	   rcall load
 	  ; rcall Noload
        ;put code here to generate RCLK pulse
               sbi PORTB,1
-              rcall delay_long
+              ;rcall delay_long
               cbi PORTB,1
 
        ;restore registers from stack
@@ -253,12 +263,11 @@ debounce5:
 pressed4:
 	rjmp L2
 pressed5:
-	rjmp L1
+	rjmp L2
 
 load:	
-
 		;pop R18
-        rol R16              ; rotate left trough Carry
+        rol R18              ; rotate left trough Carry
 		;rol R18
        BRCS set_ser_in_12    ; branch if Carry is set
        ; put code here to set SER to 0 ...
@@ -272,7 +281,7 @@ set_ser_in_12:
 end2: 
 ; put code here to generate SRCLK pulse...
        sbi PORTB,2
-       rcall delay_long
+      ; rcall delay_long
        cbi PORTB,2
        dec R19
        brne load

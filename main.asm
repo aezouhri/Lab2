@@ -26,10 +26,10 @@ L1: SBIS PINB,4
 	rjmp L2
 	ldi R16,0x06;0
 	rcall display
-	;rcall oneSecDelay
-	ldi R18,0x07 ;0
+	rcall oneSecDelay
+	;ldi R18,0x07 ;0
 	;rcall display2
-	
+	rcall effeciency
 	
 
 	rjmp L1
@@ -84,14 +84,9 @@ rcall oneSecDelay
 RJMP L2
 
 
-L4:
-ldi R16,0x06
-rcall display2
-rcall oneSecDelay
-rjmp L2
-
 
 effeciency:
+	
 	rcall debounce4
 	rcall debounce5
 
@@ -132,8 +127,10 @@ end:
        cbi PORTB,2
        dec R17
        brne loop
-
-
+	   ldi R19, 8
+	   ldi r16,0xBF
+	   rcall load
+	  ; rcall Noload
        ;put code here to generate RCLK pulse
               sbi PORTB,1
               rcall delay_long
@@ -147,62 +144,8 @@ end:
        ret
 	   
 
-display2: 
-;backup used registers on stack
-
-	    
-       push R18
-       push R19
-       in R19, SREG
-       push R19
-       ldi R19, 8 ; loop --> test all 8 bits
-	  
-
-loop2:
-       rol R18              ; rotate left trough Carry
-       BRCS set_ser_in_12    ; branch if Carry is set
-       ; put code here to set SER to 0 ...
-       sbi PORTB,3
-       rjmp end2
-
-
-set_ser_in_12:
-;put code here to set SER to 1...
-       cbi PORTB,3
-
- 
-end2: 
-; put code here to generate SRCLK pulse...
-       sbi PORTB,2
-       rcall delay_long
-       cbi PORTB,2
-       dec R19
-       brne loop2
-
-
-              ; put code here to generate RCLK pulse
-              sbi PORTB,1
-              rcall delay_long
-              cbi PORTB,1
-			  
-
-       ;restore registers from stack
-       pop R19
-       out SREG, R19
-       pop R19
-       pop R18
-       ret
-
-
 stop: 
 	jmp stop
-
-
-
-
-
-
-
 
 
 delay_long:
@@ -256,7 +199,7 @@ debounce4:
 	ldi r25,0 ; ones
 	ldi r26,0 ;zeroes
 	ldi r27,10 ; i
-	d7:               ; no operation
+	d7:               
 		SBIS PINB,4
 			inc r26
 		SBIC PINB,4
@@ -292,3 +235,26 @@ pressed4:
 	rjmp L2
 pressed5:
 	rjmp L1
+
+load:	
+
+		;pop R18
+        rol R16              ; rotate left trough Carry
+		;rol R18
+       BRCS set_ser_in_12    ; branch if Carry is set
+       ; put code here to set SER to 0 ...
+       cbi PORTB,3
+       rjmp end2
+
+
+set_ser_in_12:
+; put code here to set SER to 1...
+       sbi PORTB,3
+end2: 
+; put code here to generate SRCLK pulse...
+       sbi PORTB,2
+       rcall delay_long
+       cbi PORTB,2
+       dec R19
+       brne load
+	   ret

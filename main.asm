@@ -9,6 +9,25 @@
 ; Author : aezouhri
 
 ;
+push R16
+ldi R16, 0x7F
+push R16
+ldi R16,0x7
+push R16
+ldi R16,0x7D
+push R16
+ldi R16,0x6D
+push R16
+ldi R16,0x66
+push R16
+ldi R16,0x4F
+push R16
+ldi R16,0x5B
+push R16
+ldi R16,0x6
+push R16
+ldi r16,0xBF
+push R16
 
 ; put code here to configure I/0 lines ; as output & connected to SN74HC595
 

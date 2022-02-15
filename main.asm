@@ -11,32 +11,30 @@
 ;
 
 ; put code here to configure I/0 lines ; as output & connected to SN74HC595
-
 sbi  DDRB,1
 sbi  DDRB,2
 sbi  DDRB,3
 cbi  DDRB,4
 cbi  DDRB,5
-ldi R16,0x67
-
+ldi R16,0xEF
 push R16
-ldi R16, 0x7F
+ldi R16, 0xFF
 push R16
-ldi R16,0x7
+ldi R16,0x87
 push R16
-ldi R16,0x7D
+ldi R16,0xFD
 push R16
-ldi R16,0x6D
+ldi R16,0xED
 push R16
-ldi R16,0x66
+ldi R16,0xE6
 push R16
-ldi R16,0x4F
+ldi R16,0xCF
 push R16
-ldi R16,0x5B
+ldi R16,0xDB
 push R16
-ldi R16,0x6
+ldi R16,0x86
 push R16
-ldi r16,0xBF
+ldi R16,0xBF
 push R16
 
 ; start main program
@@ -44,25 +42,66 @@ push R16
 ;rcall miliSecDelay
 
 ; display a digit 
-/*L1: 
-	SBIS PINB,4
-	rjmp L2
-	ldi R16,0x06;0
-	ldi R20,0xBF
+ldi R16,0x3F;0
+ldi R20,0xBF
 	;pop R20
 	rcall display
+	
+;rcall pause
+
+
+L1: 
+	
+
+SBIS PINB,4
+rjmp L2
+;ldi R16,0x67
+
+ldi R29,9
 	;rcall oneSecDelay
 	;ldi R18,0x07 ;0
 	;rcall display2
 	;rcall effeciency
+	ldi R30,0
+	rjmp L1
 	
 
-	rjmp L1
-	*/
 L2: 
-pop R20
-ldi R16, 0x06 ; load pattern to display
+ldi R21,1
+test:
+cpi R29,9
+breq set0
+back0:
+cpi R29,8
+breq set1
+back1:
+cpi R29,7
+breq set2
+back2:
+cpi R29,6
+breq set3
+back3:
+cpi R29,5
+breq set4
+back4:
+cpi R29,4
+breq set5
+back5:
+cpi R29,3
+breq set6
+back6:
+cpi R29,2
+breq set7
+back7:
+cpi R29,1
+breq set8
+back8:
+cpi R29,0
+breq set9
+back9:
+dec R29
 
+ldi R16, 0x06 ; load pattern to display
 rcall display ; call display subroutine
 rcall miliSecDelay
 rcall effeciency
@@ -100,6 +139,9 @@ rcall effeciency
 ldi R16, 0x7F ; load pattern to display
 rcall display
 rcall miliSecDelay
+rcall effeciency
+
+
 
 ;SBIS PINB,4    will try to move in some loop 
 ;rjmp L2
@@ -107,9 +149,66 @@ rcall miliSecDelay
 ldi R16, 0x67 ; load pattern to display
 rcall display
 rcall miliSecDelay
-RJMP L2
+brne test
+cpi R30,1
+breq flash
+rjmp L2
 
+set0:
+	ldi R20,0xBF
+	;dec R23
+	rjmp back0
+set1:
+	ldi R20,0x86
+	;dec R23
+	rjmp back1
+set2:
+	ldi R20,0xDB
+	;dec R23
+	rjmp back2
+set3:
+	ldi R20,0xCF
+	;dec R23
+	rjmp back3
+set4:
+	ldi R20,0xE6
+	;dec R23
+	rjmp back4
+set5:
+	ldi R20,0xED
+	;dec R23
+	rjmp back5
+set6:
+	ldi R20,0xFD
+	;dec R23
+	rjmp back6
 
+set7:
+	ldi R20,0x87
+	;dec R23
+	rjmp back7
+
+set8:
+	ldi R20,0xFF
+	;dec R23
+	rjmp back8
+set9:
+	ldi R20,0x67
+	;dec R23
+	ldi R30,1
+	
+	rjmp back9
+
+flash:
+	ldi R16,0x00
+	ldi R20, 0x00
+	rcall display
+	rcall TwoSecDelay
+	ldi R20,0x67
+	ldi R16,0x67
+	rcall display
+	rcall TwoSecDelay
+	rjmp flash
 
 effeciency:
 	
@@ -122,10 +221,7 @@ display:
 
 	   
 	  ;  ldi R17, 8 ; loop --> test all 8 bits
-       push R16
-       push R17
-       in R17, SREG
-       push R17
+       
        ldi R17, 8 ; loop --> test all 8 bits
 	  
 
@@ -166,16 +262,10 @@ end:
               cbi PORTB,1
 
        ;restore registers from stack
-       pop R17
-       out SREG, R17
-       pop R17
-       pop R16
+       
        ret
-	   
-
-stop: 
-	jmp stop
-
+intermediate:
+	rjmp L2
 
 delay_long:
     
@@ -206,7 +296,7 @@ miliSecDelay:
 	brne  d10
 	ret
 
-oneSecDelay:
+TwoSecDelay:
 	
 	ldi   r23,255      ; r23 <-- Counter for outer loop
 	d4: ldi   r24,255     ; r24 <-- Counter for level 2 loop
@@ -221,6 +311,20 @@ oneSecDelay:
 	brne  d5
 	dec   r23
 	brne  d4
+
+	/*ldi   r23,255      ; r23 <-- Counter for outer loop
+	d20: ldi   r24,255     ; r24 <-- Counter for level 2 loop
+	d21: ldi   r25,50    ; r25 <-- Counter for inner loop
+	d23: dec   r25    
+	nop;           ; no operation
+	nop
+	brne  d23
+	nop
+	nop
+	dec   r24
+	brne  d21
+	dec   r23
+	brne  d20*/
 	ret
 
 
@@ -261,9 +365,12 @@ debounce5:
 
 
 pressed4:
-	rjmp L2
+	cpi R21,0
+	breq intermediate
+	
+	rjmp pause
 pressed5:
-	rjmp L2
+	rjmp L1
 
 load:	
 		;pop R18
@@ -286,3 +393,8 @@ end2:
        dec R19
        brne load
 	   ret
+pause:
+	ldi R21,0
+	SBIS PINB,4
+	ret
+	rjmp pause

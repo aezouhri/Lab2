@@ -204,8 +204,8 @@ flash:
 	ldi R20, 0x00
 	rcall display
 	rcall TwoSecDelay
-	ldi R20,0x67
 	ldi R16,0x67
+	ldi R20,0x67
 	rcall display
 	rcall TwoSecDelay
 	rjmp flash
